@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd"> 
+ <configuration>
+ <!--  <settings>
+  日志
+ <setting name="logImpl" value="LOG4J"/>
+ </settings>  -->
+ <typeAliases>
+ <typeAlias type="com.zrh.entity.Users" alias="users"/>
+ <typeAlias type="com.zrh.entity.Modules" alias="modules"/>
+ <typeAlias type="com.zrh.entity.Roles" alias="roles"/>
+ <typeAlias type="com.zrh.entity.Kfz" alias="Kfz"/>
+ </typeAliases>
+ <!--注册映射  -->
+ <mappers>
+ <!-- <mapper resource="com/zrh/dao/UserMapper.xml"/>  -->
+ </mappers>
+ 
+ </configuration>

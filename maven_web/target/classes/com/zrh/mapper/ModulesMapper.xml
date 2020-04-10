@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zrh.mapper.ModulesMapper">
+
+	<select id="getAllModules" resultType="modules">
+		select * from modules
+	</select>
+	<select id="getAllModulesbyid" resultType="modules">
+		select * from modules where Id=#{id}
+	</select>
+	<update id="updateModulesById">
+		update modules set Name =
+		#{Name},ParentId=#{ParentId},Path=#{Path},Weight=#{Weight} where
+		Id=#{Id}
+	</update>
+	<delete id="deleteModulesById">
+		DELETE FROM modules where id=#{id}
+	</delete>
+	<insert id="addModules">
+		insert into modules (Name,Parentid,Path,Weight)
+		values(#{Name},#{ParentId},#{Path},#{Weight})
+	</insert>
+
+
+	<!--根据用户查角色 -->
+	<select resultType="roles" id="getRolesByUseid">
+		select * from roles where id in (select RoleId from userroles where
+		UserId=#{UserId})
+	</select>
+	<select resultType="modules" parameterType="list"
+		id="getModuleByroleid">
+		select * from modules where Id in
+		(select DISTINCT(c.ParentId) from roles a inner join rolemodules b on a.Id=b.RoleId inner
+		join modules c on b.ModuleId=c.Id where
+		<foreach collection="list" item="item" separator="or">
+			a.Id= #{item}
+		</foreach>
+		)
+		union
+		select c.* from roles a inner join rolemodules b on a.Id=b.RoleId
+		inner join modules c on b.ModuleId=c.Id where
+		<foreach collection="list" item="item" separator="or">
+			a.Id= #{item}
+		</foreach>
+		</select>
+		
+</mapper> 

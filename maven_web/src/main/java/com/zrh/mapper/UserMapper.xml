@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zrh.mapper.UserMapper">
+	<!-- 查询 -->
+	<select id="selectAll" resultType="users">
+		select * from users
+		<where>
+			<if test="userName!=null and userName!=''">
+				and LoginName like "%"#{userName}"%"
+			</if>
+			<if test="beginDate!=null and beginDate!=''">
+				and CreateTime &gt; #{beginDate}
+			</if>
+			<if test="endDate!=null and endDate!=''">
+				and CreateTime &lt; #{endDate}
+			</if>
+			<if test="isLock!=null and isLock!=''">
+				and IsLockout = #{isLock}
+			</if>
+		</where>
+		limit #{page},#{limit}
+
+	</select>
+	<select id="getConut" resultType="int">
+		select count(*) from users
+		<where>
+			<if test="userName!=null and userName!=''">
+				LoginName like "%"#{userName}"%"
+			</if>
+			<if test="beginDate!=null and beginDate!=''">
+				and CreateTime &gt; #{beginDate}
+			</if>
+			<if test="endDate!=null and endDate!=''">
+				and CreateTime &lt; #{endDate}
+			</if>
+			<if test="isLock!=null and isLock!=''">
+				and IsLockout = #{isLock}
+			</if>
+		</where>
+	</select>
+	<!--增加 -->
+	<insert id="add" parameterType="users">
+		insert into
+		users(Id,LoginName,Password,IsLockout,CreateTime)
+		values(#{id},#{name},#{pass},#{suo},#{CreateTime})
+
+	</insert>
+	<!--删除 -->
+	<delete id="delete" parameterType="string">
+		delete from users where Id =
+		#{id}
+	</delete>
+	<!--修改 -->
+	<update id="update">
+		update users
+		<set>
+			<if test="name_e!=null and name_e!=''">
+				LoginName=#{name_e},
+			</if>
+			<if test="pass_e!=null and pass_e!=''">
+				Password = #{pass_e},
+			</if>
+			<if test="email_e!=null and email_e!=''">
+				ProtectEMail = #{email_e},
+			</if>
+
+			<if test="tel_e!=null and tel_e!=''">
+				protectMTel = #{tel_e},
+			</if>
+		</set>
+		<where>
+			<if test="id_e!=null and id_e!=''">
+				Id=#{id_e}
+			</if>
+		</where>
+	</update>
+	<!--解锁 -->
+	<update id="unsuo">
+		update users
+		<set>
+			<if test="unsuo!=null and unsuo!=''">
+				IsLockout=#{unsuo},
+			</if>
+		</set>
+		<where>
+			<if test="id!=null and id!=''">
+				Id=#{id}
+			</if>
+		</where>
+	</update>
+	<!--上锁 -->
+	<update id="suo">
+		update users
+		<set>
+			<if test="onsuo!=null and onsuo!=''">
+				IsLockout=#{onsuo},
+			</if>
+		</set>
+		<where>
+			<if test="id!=null and id!=''">
+				Id=#{id}
+			</if>
+		</where>
+	</update>
+	<!--重置密码 -->
+	<update id="ressetPass">
+		update users
+		<set>
+			<if test="resetPass!=null and resetPass!=''">
+				Password=#{resetPass},
+			</if>
+		</set>
+		<where>
+			<if test="id!=null and id!=''">
+				Id=#{id}
+			</if>
+		</where>
+	</update>
+	<!--登录 -->
+	<select id="login" resultType="users">
+		select * from users
+		<where>
+			<if test="name!=null and name!=''">
+				and LoginName=#{name}
+			</if>
+			<if test="pass!=null and pass!=''">
+				and Password=#{pass}
+			</if>
+		</where>
+	</select>
+	<update id="updateLastTime">
+	update users set LastLoginTime =#{lastLoginTime} where LoginName=#{name}
+	</update>
+	<select id="getRolesByUserid" resultType="roles">
+		select * from roles WHERE Id in(SELECT RoleId from userroles where
+		UserId=#{uid})
+	</select>
+	<!--左右穿梭狂 -->
+	<select id="getRight" resultType="Kfz">
+		select `Name` as title,Id as
+		value from roles WHERE Id in(SELECT RoleId from userroles where
+		UserId=#{userId})
+	</select>
+	<select id="getLeft" resultType="Kfz">
+		select `Name` as title,Id as
+		value from roles
+	</select>
+	<!--添加用户角色 -->
+	<insert id="addUserRoles">
+		insert into userroles(Id,RoleId,UserId) values(uuid(),#{rid},#{uid});
+	</insert>
+	<!--删除用户角色 -->
+	<delete id="delUserRole">
+		delete from userroles where UserId=#{uid} and RoleId=#{rid}
+	</delete>
+</mapper> 

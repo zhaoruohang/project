@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zrh.mapper.RolesMapper">
+	<select id="selectAllRoles" resultType="roles">
+		select * from roles
+	<where>
+       <if test="Name!=null and Name!=''">
+        and Name like "%"#{Name}"%"
+      </if>
+  </where>
+    limit #{page},#{limit}
+
+</select>
+	<select id="getConutRoles" resultType="int">
+		select count(Id) from roles
+	<where>
+      <if test="Name!=null and Name!=''">
+         Name like "%"#{Name}"%"
+   </if>
+
+</where>
+</select>
+<insert id="addRoles">
+insert into roles(Id,Name) values(#{id},#{name})
+</insert>
+<delete id="deleteRoles">
+delete from roles where Id=#{id}
+
+</delete>
+<update id="updateRoles">
+update roles set Name=#{name} where Id=#{id}
+</update>
+<!--树 -->
+	<select id="getAllModulesByid" resultType="modules">
+	select * from modules where Id in(select ModuleId from rolemodules where RoleId=#{roleId})
+	</select>
+	<!--添加角色权限 -->
+	<insert id="addrolemodules">
+	insert into rolemodules(Id,RoleId,ModuleId) values(uuid(),#{rid},#{mid});
+	</insert>
+	<!--删除用户角色 -->
+	<delete id="delrolemodules">
+	delete  from rolemodules  where RoleId=#{rid}
+	</delete>
+</mapper>
+
