@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css" />
+		<script type="text/javascript" src="../lib/layui/layui.js"></script>
+		<script type="text/javascript" src="../js/token1.js" ></script>
+		<script>
+			var table, form, layer, $, laydate, util;
+			layui.use(['table', 'util', 'form', 'layer', 'jquery', 'laydate'],
+				function() {
+					table = layui.table;
+					form = layui.form;
+					layer = layui.layer;
+					$ = layui.jquery;
+					laydate = layui.laydate;
+					util = layui.util;
+					table.render({
+						elem: '#tab',
+						"method": "post",
+						url: 'http://localhost:8080/maven_web/getRoles',
+						id: 'idTest',
+						page: true, //是否开启分页
+						cols: [
+							[{
+									type: 'checkbox',
+									fixed: 'left'
+
+								}, {
+									field: 'Id',
+									title: '编号',
+									align: 'center'
+								}, {
+									field: 'Name',
+									title: '用户名',
+									align: 'center'
+
+								}
+								/*, {
+														field : 'Int0',
+														title : 'int0',
+														align : 'center'
+
+													}, {
+														field : 'String0',
+														title : 'String0',
+														align : 'center'
+
+													}*/
+								, {
+									title: '操作',
+
+									align: 'center',
+									toolbar: "#barDemo",
+									width: 450
+
+								}
+							]
+						],
+						"toolbar": "#toolbarDemo"
+					});
+					/* 查询*/
+					form.on('submit(ser)', function(data) {
+						table.reload('idTest', {
+							where: data.field //设定异步数据接口的额外参数
+						});
+						return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+					});
+					/* 行*/
+					table.on('tool(test)', function(obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+						var data = obj.data; //获得当前行数据
+						var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+						var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+						if(layEvent === 'del') { //删除
+							layer.confirm('真的删除行么', function(index) {
+								$.post("http://localhost:8080/maven_web/deleteRole", {
+									"id_d": data.Id
+								}, function(r) {
+									if(r.code == "0") {
+										table.reload('idTest');
+										layer.closeAll(); //疯狂模式，关闭所有层
+									}
+								}, "json");
+							});
+						} else if(layEvent === 'edit') { //编辑
+							form.val("edit", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+								"id_e": data.Id,
+								"name_e": data.Name // "name": "value"
+							});
+							layer.open({
+								type: 1,
+								shadeClose: true,
+								area: ['500px', '500px'],
+								content: $("#editdiv") //这里content是一个普通的String
+							});
+							form.on('submit(edittj)', function(data) {
+								$.post("http://localhost:8080/maven_web/upateRole", data.field, function(r) {
+									if(r.code == "0") {
+										table.reload('idTest');
+										layer.closeAll(); //疯狂模式，关闭所有层
+									}
+								}, "json");
+								return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+							});
+						}else if(layEvent === 'mm') {
+							sessionStorage.setItem("rid",data.Id);
+							layer.open({
+								type: 2,
+								shadeClose: true,
+								area: ['500px', '500px'],
+								content: 'rolestree.html' //这里content是一个普通的String
+							});
+				
+						}
+					});
+					//头
+					table.on('toolbar(test)', function(obj) {
+						var checkStatus = table.checkStatus(obj.config.id);
+						switch(obj.event) {
+							case 'add':
+								layer.open({
+									type: 1,
+									shadeClose: true,
+									area: ['500px', '500px'],
+									content: $("#adddiv") //这里content是一个普通的String
+								});
+								form.on('submit(addtj)', function(data) {
+									$.post("http://localhost:8080/maven_web/addRole", data.field, function(r) {
+										if(r.code = "0") {
+											table.reload('idTest');
+											layer.closeAll(); //疯狂模式，关闭所有层}
+										}
+									}, "json");
+									return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+								});
+
+						};
+					});
+				});
+		</script>
+		<script type="text/html" id="toolbarDemo">
+			<div class="layui-btn-container">
+				<button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
+				<button class="layui-btn layui-btn-sm" lay-event="deletes">批量删除</button>
+			</div>
+		</script>
+		<script type="text/html" id="barDemo">
+					  <a class="layui-btn layui-btn-xs layui-bg-gray" lay-event="mm"><i class="layui-icon layui-icon-set"></i>设置权限</a>	
+			<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+			<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+		</script>
+	</head>
+
+	<body>
+		<!-- 查询 -->
+		<form method="post" class="layui-form">
+			<div class="layui-inline">
+				<label class="layui-form-label">用户名</label>
+				<div class="layui-input-inline" style="width: 100px;">
+					<input type="text" name="Name" placeholder="用户名" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+			<div class="layui-inline">
+				<button class="layui-btn layui-btn-radius layui-btn-normal" lay-submit lay-filter="ser">搜索</button>
+			</div>
+		</form>
+		<!-- <%--添加开始--%>-->
+		<div id="adddiv" style="display:none">
+			<form class="layui-form" lay-filter="add">
+				<div class="layui-form-item">
+					<label class="layui-form-label">id</label>
+					<div class="layui-input-block" style="width: 200px;">
+						<input type="text" name="id_a" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">角色名</label>
+					<div class="layui-input-block" style="width: 200px;">
+						<input type="text" name="name_a" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-input-block">
+					<button class="layui-btn" lay-submit lay-filter="addtj">提交</button>
+				</div>
+			</form>
+		</div>
+		<!--<%--添加结束--%>-->
+		<!-- <%--编辑开始--%>-->
+		<div id="editdiv" style="display:none">
+			<form class="layui-form" lay-filter="edit">
+				<div class="layui-form-item">
+					<label class="layui-form-label">角色</label>
+					<div class="layui-input-block" style="width: 200px;">
+						<input type="hidden" name="id_e" autocomplete="off" class="layui-input">
+						<input type="text" name="name_e" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-input-block">
+					<button class="layui-btn" lay-submit lay-filter="edittj">提交</button>
+				</div>
+			</form>
+		</div>
+		<!-- <%--编辑结束--%>-->
+		<table class="layui-table" id="tab" lay-filter="test"></table>
+
+	</body>
+
+</html>

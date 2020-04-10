@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../lib/layui/css/layui.css" />
+		<script type="text/javascript" src="../lib/layui/layui.js"></script>
+		<script type="text/javascript" src="../js/token1.js" ></script>
+		<script type="text/javascript" src="../js/x-admin.js" ></script>
+	</head>
+
+	<body>
+		<div id="test1"></div>
+		<div class="layui-input-block">
+			<button class="layui-btn" lay-submit lay-filter="bctj">保存</button>
+		</div>
+		<!--------------------------------------------------------------------------------------->
+		<script type="text/javascript">
+			var RoleId = sessionStorage.getItem("rid");
+			var  form, layer, $,tree;
+			layui.use(['tree', 'layer','jquery', 'form'], function() {
+				tree = layui.tree;
+				layer = layui.layer;
+			 	$ = layui.jquery;
+				form = layui.form;
+				var tree = layui.tree;
+				var rData = new Array();
+				$.post("http://localhost:8080/maven_web/getAllModules", {}, function(r) {
+
+					$.post("http://localhost:8080/maven_web/getrolemodulesByid", {
+						"RoleId": RoleId
+					}, function(right) {
+						for(var i = 0; i < right.length; i++) {
+							//console.log(right[i].id);
+							rData.push(right[i].id);
+							//alert(rdata);
+							//alert(result.data);
+						}
+
+						//渲染
+						var inst1 = tree.render({
+							elem: '#test1' //绑定元素
+								,
+							data: r,
+							checked: true,
+							showCheckbox: true,
+							id: 'demoId' //定义索引    
+						});
+						tree.setChecked('demoId', rData);
+
+						form.on('submit(bctj)', function(data) {
+							var checkData = tree.getChecked('demoId'); //获得选中的节点
+							//console.log(checkData);
+							//被选中的要添加的数组
+							var mids = new Array()
+
+							//获得所有子节点id
+							for(var i = 0; i < checkData.length; i++) {
+								for(var j = 0; j < checkData[i].children.length; j++) {
+									mids.push(checkData[i].children[j].id);
+								}
+							}
+						
+							var mid = mids.toString();
+							//删除该用户所有权限
+							$.post("http://localhost:8080/maven_web/delrolemodules", {
+								"rId1": RoleId
+							}, function(r) {}, "json");
+							//添加权限
+							$.post("http://localhost:8080/maven_web/addrolemodules", {
+								"mids": mid,
+								"RoleId": RoleId
+							}, function(r) {
+								if(r.code == 0) {
+							layer.msg("设置成功");
+							
+							 parent.location.reload();//刷新父类页面
+								}
+							}, "json");
+
+							return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+						});
+					}, "json");
+				}, "json");
+
+			});
+		</script>
+	</body>
+
+</html>

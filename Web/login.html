@@ -1,0 +1,102 @@
+吧<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>权限 管理系统</title>
+  <link rel="stylesheet" href="css/login.css">
+  <script src="lib/layui/layui.js" charset="utf-8"></script>
+  <link rel="stylesheet" href="lib/css/layui.css" />
+  <link rel="stylesheet" type="text/css" href="lib/layui/css/layui.css" />
+		<script type="text/javascript" src="lib/layui/layui.js"></script>
+  <script>
+   
+    layui.use(['jquery','form','layer'], function(){
+        var $ =layui.jquery;
+        var form = layui.form;//表单验证
+        var layer= layui.layer;
+    //表单验证（页面自动关联,验证结果绑定在表单）
+     form.verify({
+        name: function(value, item){ //value：表单的值、item：表单的DOM对象 自定义验证规则
+            if(!new RegExp("^[a-zA-Z0-9_\u4e00-\u9fa5\\s·]+$").test(value)){
+                return '用户名不能有特殊字符';
+            }
+            if(/^\d+\d+\d$/.test(value)){
+                return '用户名不能全为数字';
+            }
+            
+        } ,  
+        pass:function(value,item){
+            if(!/^.{6,12}$/img.test(value)){
+                return"密码必须位6~12位"
+            }
+        },
+    });      
+    //不想提交，可以监听，使用form.on
+    form.on('submit(tj)', function(data){
+        //用ajax时需要注意你的url接口、采用哪一种方式type获取，它的使用的哪种数据类型datatype
+        $.ajax({
+            url:'http://localhost:8080/maven_web/login',
+            type:'post',
+            dataType:'json',
+            data:{
+                //监听的内容有哪些,你的登陆界面上用户输入的有哪些，就监听那些
+                LoginName:$("#name").val(),
+                PassWord:$("#pwd").val()
+            },
+            beforeSend:function(){
+                //弹出的lodinng层
+                layer.load(0.5,{
+                    shade:[0.5,"#333"]
+                });
+            },
+            success:function(res){
+                if(res.code == 0){
+                     sessionStorage.setItem('uid',res.u.id);
+                      sessionStorage.setItem('name',res.u.loginName);
+                                 //获取用户数据，并存储在本地。
+                    sessionStorage.setItem('rolename',res.msg.rname);
+                   /* sessionStorage.setItem('module',JSON.stringify(res.data.moduledata));*/
+                console.log(res.msg.rname);
+                    layer.msg("登陆成功",{icon:1})
+                    setTimeout(function(){
+                        //如果输入成功，可以跳到另一个你需要的界面
+                      location.href="index.html";
+                    },2000)     
+                }else{
+                //不等于0时填出的内容
+                     layer.msg(res.msg)
+                }
+            },
+            error:function(){
+                //用户输入与接口内容不对应，显示文字
+                layer.msg("网络繁忙，访问失败")
+            },
+            complete:function(){
+                //关掉loading
+                layer.closeAll("loading")
+            }
+        })
+    return false;//不会跳转到网址栏，只会跳转到你要的界面 一定要写。
+    });     
+  });
+    </script>  
+</head>
+<body class="login-bg">
+     <canvas id="fullstarbg">你的浏览器不支持canvas标签!</canvas>
+    <div class="login">
+        <div class="message">管理员系统登录</div>
+        <div id="darkbannerwrap"></div>   
+        <form method="post" class="layui-form" lay-filter="lo">
+            <input name="LoginName" id="name"  placeholder="用户名"  type="text" lay-verify="required|name" class="layui-input" >
+            <hr class="hr15">
+            <input name="PassWord" id="pwd" type="password" lay-verify="required|pass" placeholder="密码"   class="layui-input">
+            <hr class="hr15">
+           <div class="layui-input-inline login-btn">
+            <button lay-submit lay-filter="tj" class="layui-btn">登录</button>
+        </div>
+        </form>
+    </div>
+   
+</body>
+</html>

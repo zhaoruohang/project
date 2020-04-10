@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../lib/layui/css/layui.css" />
+		<script type="text/javascript" src="../lib/layui/layui.js" ></script>
+	</head>
+	<body>
+		<div id="test1"></div>
+		<!--------------------------------------------------------------------------------------->
+		<script type="text/javascript">
+			  
+			    layui.use(['transfer',"jquery"], function(){
+                var transfer = layui.transfer;
+                var $=layui.jquery;
+                //获取角色id
+              var RoleId= sessionStorage.getItem("rid");
+              var r1=new Array();
+                //获取左侧数据
+                $.post("http://localhost:8080/maven_web/getrolemodulesLeft",{
+                },function(left){
+                   	
+                    /*var rui = data.map(function(obj){
+                    	return {
+                    		"value":obj.value,
+                    		"title":obj.title
+                    	}*/
+                    
+                	
+                	     //获取右侧用户角色
+                      var rData=new Array();
+                      $.post("http://localhost:8080/maven_web/getrolemodulesRightByid",{
+                	  "RoleId":RoleId
+                      },function(right){
+                      	for(var i = 0; i <right.length; i++) {
+								console.log(right[i].value);
+								rData.push(right[i].value);
+								//alert(rdata);
+								//alert(result.data);
+								}
+                    console.log(rData);
+                	   transfer.render({
+                	 	elem: '#test1',
+                	 	title:["系统所有角色","当前用户角色"],
+                	 	data:left,
+                	 	value:rData,
+                	 	//角色添加
+                 onchange:function(obj,index){
+                	 if(index==0){
+                	 	for(var i=0;i<obj.length;i++){
+                	 		  $.post("http://localhost:8080/maven_web/addrolemodules",{
+                	 		  	"rId":RoleId,
+                	 		  	"mId":obj[i].value,
+                	 		  },function(r){
+                	 		  	 if(r.success){
+                	 		  	 	 alert("添加成功");
+                	 		  	 }else{
+                	 		  	 	 alert("添加失败");
+                	 		  	 }
+                	 		  },"json");
+                	 	}
+                	 }else{
+                	 	   for(var i=0;i<obj.length;i++){
+                	 		  $.post("http://localhost:8080/maven_web/delrolemodules",{
+                	 		  	"rId1":RoleId,
+                	 		  	"mId1":obj[i].value
+                	 		  },function(r){
+                	 		  	 if(r.success){
+                	 		  	 	 alert("删除成功");
+                	 		  	 }else{
+                	 		  	 	alert("删除失败");
+                	 		  	 }
+                	 		  },"json");
+                	 	}
+                	 }
+                }                
+                	 });
+
+                },"json");                         	 	 	 	    
+               },"json");
+               
+                     });
+                 
+		</script>
+	</body>
+</html>
